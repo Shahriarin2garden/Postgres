@@ -1,4 +1,4 @@
-from app.db.pool import pool
+from app.db import pool as pool_module
 
 CREATE_USERS_TABLE = """
 CREATE TABLE IF NOT EXISTS users (
@@ -11,5 +11,12 @@ CREATE TABLE IF NOT EXISTS users (
 
 
 async def ensure_tables():
-    async with pool.acquire() as conn:
-        await conn.execute(CREATE_USERS_TABLE)
+    if pool_module.pool is None:
+        raise RuntimeError("Database pool is not initialized")
+    try:
+        async with pool_module.pool.acquire() as conn:
+            await conn.execute(CREATE_USERS_TABLE)
+            print("Tables created successfully")
+    except Exception as e:
+        print(f"Failed to create tables: {e}")
+        raise

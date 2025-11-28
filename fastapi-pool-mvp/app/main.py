@@ -8,11 +8,26 @@ from app.routes.user import router as user_router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    await init_pool()
-    await ensure_tables()
+    try:
+        print("Initializing database pool...")
+        await init_pool()
+        print("Creating database tables...")
+        await ensure_tables()
+        print("Application startup completed successfully")
+    except Exception as e:
+        print(f"Startup failed: {e}")
+        raise
+    
     yield
+    
     # Shutdown
-    await close_pool()
+    try:
+        print("Closing database pool...")
+        await close_pool()
+        print("Application shutdown completed")
+    except Exception as e:
+        print(f"Shutdown error: {e}")
+        raise
 
 
 app = FastAPI(
